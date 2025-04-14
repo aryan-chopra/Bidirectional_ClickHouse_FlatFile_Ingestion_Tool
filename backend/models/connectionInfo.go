@@ -7,5 +7,3 @@ type ConnectionInfo struct {
 	Username string
 	Password string
 }
-
-

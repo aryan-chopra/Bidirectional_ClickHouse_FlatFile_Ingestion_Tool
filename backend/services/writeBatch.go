@@ -8,7 +8,7 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 )
 
-func WriteBatch(connectionInfo models.ConnectionInfo) error {
+func connect(connectionInfo models.ConnectionInfo) error {
 	conn, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{fmt.Sprintf("%s:%d", connectionInfo.Host, connectionInfo.Port)},
 		Auth: clickhouse.Auth{
@@ -34,4 +34,16 @@ func WriteBatch(connectionInfo models.ConnectionInfo) error {
 	fmt.Println(v.String())
 
 	return nil
+}
+
+func sendBatch(conn clickhouse.Conn, )
+
+func WriteBatch(batch models.Batch) error {
+	connectionInfo := batch.ConnectionInfo
+	err := connect(connectionInfo)
+
+	if err != nil {
+		return err
+	}
+
 }

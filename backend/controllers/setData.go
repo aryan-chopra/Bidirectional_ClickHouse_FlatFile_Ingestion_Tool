@@ -9,13 +9,13 @@ import (
 )
 
 func SetData (c *gin.Context) {
-	var connectionInfo models.ConnectionInfo
+	var batch models.Batch
 	
-	if err := c.BindJSON(&connectionInfo); err != nil {
+	if err := c.BindJSON(&batch); err != nil {
 		return
 	}
 	
-	err := services.WriteBatch(connectionInfo)
+	err := services.WriteBatch(batch)
 	
 	if err != nil {
 		fmt.Println(err)
