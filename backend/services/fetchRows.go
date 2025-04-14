@@ -7,11 +7,11 @@ import (
 	"zeotap/models"
 )
 
-func FetchRows(rowInfo models.RowInfo) ([][]any, int, error) {
+func FetchRows(rowInfo models.RowInfo) ([]string, [][]any, int, error) {
 	conn, err := connect(rowInfo.ConnectionInfo)
 
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, 0, err
 	}
 
 	var fetchedRows [][]any
@@ -25,9 +25,9 @@ func FetchRows(rowInfo models.RowInfo) ([][]any, int, error) {
 	rows, err := conn.Query(context.Background(), query)
 
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, 0, err
 	}
-
+	
 	var (
 		columnTypes = rows.ColumnTypes()
 		vars        = make([]any, len(columnTypes))
@@ -40,7 +40,7 @@ func FetchRows(rowInfo models.RowInfo) ([][]any, int, error) {
 		err := rows.Scan(vars...)
 
 		if err != nil {
-			return nil, 0, err
+			return nil, nil, 0, err
 		}
 
 		scannedItems := make([]any, len(vars))
@@ -51,5 +51,5 @@ func FetchRows(rowInfo models.RowInfo) ([][]any, int, error) {
 		fetchedRows = append(fetchedRows, scannedItems)
 	}
 
-	return fetchedRows, limit, nil
+	return rows.Columns(), fetchedRows, limit, nil
 }

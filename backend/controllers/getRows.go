@@ -19,7 +19,7 @@ func GetRows (c *gin.Context) {
 		return
 	}
 	
-	fetchedRows, items, err := services.FetchRows(rowInfo)
+	columnNames, fetchedRows, items, err := services.FetchRows(rowInfo)
 	
 	if err != nil {
 		fmt.Println(err)
@@ -28,6 +28,7 @@ func GetRows (c *gin.Context) {
 	
 	c.JSON(http.StatusOK, gin.H{
 		"items": items,
+		"columnNames": columnNames,
 		"rows": fetchedRows,
 	})
 }
