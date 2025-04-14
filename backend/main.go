@@ -11,6 +11,7 @@ func main() {
 	
 	router.POST("/post", controllers.SetData)
 	router.GET("/get-tables", controllers.GetTables)
+	router.GET("get-rows", controllers.GetRows)
 	
 	router.Run(":8080")
 }

@@ -1,7 +1,7 @@
 package models
 
-type FetchRows struct {
+type RowInfo struct {
 	ConnectionInfo ConnectionInfo
 	TableName      string
-	start          int
+	Start          int
 }
