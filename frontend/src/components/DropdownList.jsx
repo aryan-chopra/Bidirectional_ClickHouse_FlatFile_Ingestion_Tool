@@ -8,16 +8,17 @@ function DropdownList({ items = [], onChange }) {
         return (
 
             <label
-                key={index}
+                key={item}
                 className="flex items-center px-3 py-0 rounded-md hover:bg-blue-50 cursor-pointer transition duration-150 ease-in-out"
             >
                 <input
                     id={item}
                     type="checkbox"
                     defaultChecked={true}
+                    onChange={(e) => onChange(e)}
                     className="cursor-pointer align-middle form-checkbox text-blue-600 h-4 w-4 mr-4"
                 />
-                <label htmlFor={index} className="cursor-pointer align-middle p-4 text-sm text-gray-800">{item}</label>
+                <label htmlFor={item} className="cursor-pointer align-middle p-4 text-sm text-gray-800">{item}</label>
             </label>
         )
     })
