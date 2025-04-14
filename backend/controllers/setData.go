@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
 
 	"zeotap/models"
 	"zeotap/services"
@@ -20,9 +21,13 @@ func SetData (c *gin.Context) {
 	}
 	
 	fmt.Println("Calling the service")
-	err := services.WriteBatch(batch)
+	count, err := services.WriteBatch(batch)
 	
 	if err != nil {
 		fmt.Println(err)
 	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"count": count,
+	})
 }

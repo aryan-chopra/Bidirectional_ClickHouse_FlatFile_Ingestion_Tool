@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"strings"
 	"zeotap/models"
@@ -11,33 +10,6 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 )
 
-func connect(connectionInfo models.ConnectionInfo) (clickhouse.Conn, error) {
-	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{fmt.Sprintf("%s:%d", connectionInfo.Host, connectionInfo.Port)},
-		Auth: clickhouse.Auth{
-			Database: connectionInfo.Database,
-			Username: connectionInfo.Username,
-			Password: connectionInfo.Password,
-		},
-		TLS: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	v, err := conn.ServerVersion()
-
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Println(v.String())
-
-	return conn, nil
-}
 
 func getTableString(batch models.Batch, types []string) string {
 	var columns []string
@@ -50,7 +22,7 @@ func getTableString(batch models.Batch, types []string) string {
 		batch.TableName, strings.Join(columns, ", ")) 
 }
 
-func sendBatch(conn clickhouse.Conn, batch models.Batch) error {
+func sendBatch(conn clickhouse.Conn, batch models.Batch) (int, error) {
 	ctx := context.Background()
 	types := utils.InferTypes(batch.Rows[0])
 	tableString := getTableString(batch, types)
@@ -58,7 +30,7 @@ func sendBatch(conn clickhouse.Conn, batch models.Batch) error {
 	err := conn.Exec(ctx, tableString)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	insertQuery := fmt.Sprintf("INSERT INTO `%s`", batch.TableName)
@@ -66,21 +38,27 @@ func sendBatch(conn clickhouse.Conn, batch models.Batch) error {
 	batchToPush, err := conn.PrepareBatch(ctx, insertQuery)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
+	var rowsProcessed int
+	
 	for _, row := range batch.Rows {
 		err := batchToPush.Append(row...)
 		
 		if err != nil {
-			return err
+			return 0, err
 		}
+		
+		rowsProcessed++
 	}
 	
-	return batchToPush.Send()
+	batchToPush.Send()
+	
+	return rowsProcessed, nil
 }
 
-func WriteBatch(batch models.Batch) error {
+func WriteBatch(batch models.Batch) (int, error) {
 	fmt.Println("In service to write")
 	connectionInfo := batch.ConnectionInfo
 	conn, err := connect(connectionInfo)
@@ -88,7 +66,7 @@ func WriteBatch(batch models.Batch) error {
 	fmt.Println(conn, err)
 	
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	fmt.Println("Connected")

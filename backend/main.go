@@ -10,6 +10,7 @@ func main() {
 	router := gin.Default()
 	
 	router.POST("/post", controllers.SetData)
+	router.GET("/get-tables", controllers.GetTables)
 	
 	router.Run(":8080")
 }
