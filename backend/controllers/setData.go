@@ -1,26 +1,23 @@
-package controller
+package controllers
 
 import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"zeotap/models"
+	"zeotap/services"
 )
 
-type ConnectionInfo struct {
-	Host string
-	Port int
-	Database string
-	User string
-	Password string
-}
-
-func setData (c *gin.Context) error {
-	var connectionInfo ConnectionInfo
+func SetData (c *gin.Context) {
+	var connectionInfo models.ConnectionInfo
 	
 	if err := c.BindJSON(&connectionInfo); err != nil {
-		return err
+		return
 	}
 	
-	fmt.Println(connectionInfo)
-	return nil
+	err := services.WriteBatch(connectionInfo)
+	
+	if err != nil {
+		fmt.Println(err)
+	}
 }
