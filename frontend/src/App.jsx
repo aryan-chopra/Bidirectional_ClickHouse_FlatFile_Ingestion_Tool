@@ -10,7 +10,8 @@ const initialInputs = {
   port: "9440",
   database: "default",
   username: "default",
-  password: "8ee_Rt6D~CWK7"
+  password: "8ee_Rt6D~CWK7",
+  tableName: ""
 }
 
 function App() {
@@ -89,6 +90,13 @@ function App() {
       ></Input>
 
       <Input
+        placeholder={"Table Name"}
+        value={inputs.tableName}
+        id={"tableName"}
+        onChange={handleInputChange}
+      ></Input>
+
+      <Input
         placeholder={"Username"}
         value={inputs.username}
         id={"username"}
@@ -109,7 +117,7 @@ function App() {
 
       <Button
         text={"Upload"}
-        onClick={() => upload(selectedColumns, inputs, file)}
+        onClick={() => upload(columns, selectedColumns, inputs, file)}
       ></Button>
     </div>
   )
@@ -173,7 +181,7 @@ async function connect(inputs) {
 }
 
 
-async function upload(selectedColumnsObj, inputs, file) {
+async function upload(columns, selectedColumnsObj, inputs, file) {
   const queue = []
   let processing = false
 
@@ -181,8 +189,8 @@ async function upload(selectedColumnsObj, inputs, file) {
     .filter(([_, checked]) => checked)
     .map(([key]) => key)
 
-    console.log("Selectec cols: ")
-    console.log(selectedColumns)
+  console.log("Selectec cols: ")
+  console.log(selectedColumns)
 
   const uploadChunk = async function () {
     console.log("Trying")
@@ -207,7 +215,7 @@ async function upload(selectedColumnsObj, inputs, file) {
         Username: inputs.username,
         Password: inputs.password
       },
-      TableName: "big_table7",
+      TableName: inputs.tableName,
       ColumnNames: selectedColumns,
       Rows: chunk
     }
@@ -232,6 +240,7 @@ async function upload(selectedColumnsObj, inputs, file) {
 
   Papa.parse(file, {
     header: false,
+    dynamicTyping: true,
     skipEmptyLines: true,
     worker: true,
     chunkSize: 5000000,
@@ -247,7 +256,20 @@ async function upload(selectedColumnsObj, inputs, file) {
       console.log("Chunk:")
       console.log(data)
 
-      queue.push({ chunkNumber: chunkNumber, chunk: data })
+      const selectedIndices = selectedColumns.map(col => {
+        const index = columns.indexOf(col)
+        if (index !== -1) {
+          return index
+        }
+      })
+
+      const filteredData = data.map(row => {
+        return selectedIndices.map(idx => row[idx])
+      })
+
+      console.log(filteredData)
+
+      queue.push({ chunkNumber: chunkNumber, chunk: filteredData })
 
       if (processing == false) {
         uploadChunk()
