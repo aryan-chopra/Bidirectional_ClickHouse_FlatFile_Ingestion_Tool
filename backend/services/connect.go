@@ -9,8 +9,9 @@ import (
 )
 
 
-func connect(connectionInfo models.ConnectionInfo) (clickhouse.Conn, error) {
+func Connect(connectionInfo models.ConnectionInfo) (clickhouse.Conn, error) {
 	fmt.Println("Connecting")
+	fmt.Println(connectionInfo)
 	
 	conn, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{fmt.Sprintf("%s:%d", connectionInfo.Host, connectionInfo.Port)},

@@ -61,7 +61,7 @@ func sendBatch(conn clickhouse.Conn, batch models.Batch) (int, error) {
 func WriteBatch(batch models.Batch) (int, error) {
 	fmt.Println("In service to write")
 	connectionInfo := batch.ConnectionInfo
-	conn, err := connect(connectionInfo)
+	conn, err := Connect(connectionInfo)
 	fmt.Println("Executed connect")
 	fmt.Println(conn, err)
 	

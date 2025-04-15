@@ -8,7 +8,7 @@ import (
 )
 
 func FetchRows(rowInfo models.RowInfo) ([]string, [][]any, int, error) {
-	conn, err := connect(rowInfo.ConnectionInfo)
+	conn, err := Connect(rowInfo.ConnectionInfo)
 
 	if err != nil {
 		return nil, nil, 0, err

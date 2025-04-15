@@ -6,7 +6,7 @@ import (
 )
 
 func FetchTables(tableInfo models.TableInfo) ([]string, error) {
-	conn, err := connect(tableInfo.ConnectionInfo)
+	conn, err := Connect(tableInfo.ConnectionInfo)
 	
 	if err != nil {
 		return nil, err
