@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-function DropdownList({ items = [], onChange }) {
+function DropdownCheckList({ items = [], onChange }) {
     console.log("Items:")
     console.log(items)
 
@@ -58,4 +58,4 @@ function DropdownList({ items = [], onChange }) {
     )
 }
 
-export default DropdownList
+export default DropdownCheckList

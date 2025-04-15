@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import FileInput from "./components/FileInput.jsx"
-import DropdownList from "./components/DropdownList.jsx"
 import Papa from "papaparse"
 import Input from "./components/Input.jsx"
 import Button from "./components/Button.jsx"
+import DropdownCheckList from "./components/DropdownCheckList.jsx"
+import DropdownMenu from "./components/DropdownMenu.jsx"
 
 const initialInputs = {
   host: "jqii6ig8f6.asia-southeast1.gcp.clickhouse.cloud",
@@ -19,6 +20,9 @@ function App() {
   const [file, setFile] = useState(null)
   const [selectedColumns, setSelectedColumns] = useState({})
   const [inputs, setInputs] = useState(initialInputs)
+  const [source, setSource] = useState("File")
+  const [tables, setTables] = useState([])
+  const [selectedTable, setSelectedTable] = useState("Select Table")
 
   useEffect(() => {
     getColumns(file, initializeColumns, setColumns, setSelectedColumns)
@@ -62,9 +66,19 @@ function App() {
         onChange={handleFileChange}
       />
 
-      <DropdownList
-        items={columns}
-        onChange={handleColumnSelection}
+      <DropdownMenu
+        title={"Source: " + source}
+        items={["File", "ClickHouseDB"]}
+        onClick={(e) => setSource(e.target.id)}
+      />
+
+      <VariableDropdown
+        source={source}
+        columns={columns}
+        handleColumnSelection={handleColumnSelection}
+        tables={tables}
+        selectedTable={selectedTable}
+        setSelectedTable={setSelectedTable}
       />
 
       <Input
@@ -119,8 +133,32 @@ function App() {
         text={"Upload"}
         onClick={() => upload(columns, selectedColumns, inputs, file)}
       ></Button>
+
+      <Button
+        text={"Fetch Tables"}
+        onClick={() => fetchTables(inputs, setTables)}
+      />
     </div>
   )
+}
+
+function VariableDropdown({ source, columns, handleColumnSelection, tables, selectedTable, setSelectedTable }) {
+  if (source === 'File') {
+    return (
+      <DropdownCheckList
+        items={columns}
+        onChange={handleColumnSelection}
+      />
+    )
+  } else {
+    return (
+      <DropdownMenu
+        title={selectedTable}
+        items={tables}
+        onClick={(e) => setSelectedTable(e.target.id)}
+      />
+    )
+  }
 }
 
 function getColumns(file, onComplete, setColumns, setSelectedColumns) {
@@ -152,6 +190,32 @@ function initializeColumns(columns, setColumns, setSelectedColumns) {
   }
 
   setSelectedColumns(tempColumnObjects)
+}
+
+async function fetchTables(inputs, setTables) {
+  const data = {
+    ConnectionInfo: {
+      Host: inputs.host,
+      Port: parseInt(inputs.port),
+      Database: inputs.database,
+      Username: inputs.username,
+      Password: inputs.password
+    }
+  }
+
+  const res = await fetch('http://localhost:8080/get-tables', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+
+  const resJson = await res.json()
+
+  setTables(resJson.tables)
+
+  console.log(resJson)
 }
 
 async function connect(inputs) {
@@ -188,9 +252,6 @@ async function upload(columns, selectedColumnsObj, inputs, file) {
   const selectedColumns = Object.entries(selectedColumnsObj)
     .filter(([_, checked]) => checked)
     .map(([key]) => key)
-
-  console.log("Selectec cols: ")
-  console.log(selectedColumns)
 
   const uploadChunk = async function () {
     console.log("Trying")
