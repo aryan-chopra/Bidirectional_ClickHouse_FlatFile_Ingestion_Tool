@@ -6,11 +6,11 @@ import Input from "./components/Input.jsx"
 import Button from "./components/Button.jsx"
 
 const initialInputs = {
-  host: "",
-  port: "",
-  database: "",
-  username: "",
-  password: ""
+  host: "jqii6ig8f6.asia-southeast1.gcp.clickhouse.cloud",
+  port: "9440",
+  database: "default",
+  username: "default",
+  password: "8ee_Rt6D~CWK7"
 }
 
 function App() {
@@ -109,7 +109,7 @@ function App() {
 
       <Button
         text={"Upload"}
-        onClick={() => upload(file)}
+        onClick={() => upload(selectedColumns, inputs, file)}
       ></Button>
     </div>
   )
@@ -172,14 +172,69 @@ async function connect(inputs) {
   console.log(resJson)
 }
 
-async function upload(file) {
+
+async function upload(selectedColumnsObj, inputs, file) {
+  const queue = []
+  let processing = false
+
+  const selectedColumns = Object.entries(selectedColumnsObj)
+    .filter(([_, checked]) => checked)
+    .map(([key]) => key)
+
+    console.log("Selectec cols: ")
+    console.log(selectedColumns)
+
+  const uploadChunk = async function () {
+    console.log("Trying")
+    if (queue.length == 0) {
+      processing = false
+      return
+    }
+
+    processing = true
+    const chunkInfo = queue.shift()
+
+    const chunkNumber = chunkInfo.chunkNumber
+    const chunk = chunkInfo.chunk
+
+    console.log(chunkInfo)
+    console.log("Processing chunk number: " + chunkNumber)
+    const data = {
+      ConnectionInfo: {
+        Host: inputs.host,
+        Port: parseInt(inputs.port),
+        Database: inputs.database,
+        Username: inputs.username,
+        Password: inputs.password
+      },
+      TableName: "big_table7",
+      ColumnNames: selectedColumns,
+      Rows: chunk
+    }
+
+    const res = await fetch('http://localhost:8080/post', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    console.log("Got chunk number: " + chunkNumber)
+
+    const resJson = await res.json()
+
+    console.log(resJson)
+    uploadChunk()
+  }
+
   let chunkNumber = 0
 
   Papa.parse(file, {
     header: false,
     skipEmptyLines: true,
     worker: true,
-    chunkSize: 300, // Papa handles chunking!
+    chunkSize: 5000000,
     chunk: async (results, parser) => {
       let data
 
@@ -191,8 +246,17 @@ async function upload(file) {
       chunkNumber++
       console.log("Chunk:")
       console.log(data)
+
+      queue.push({ chunkNumber: chunkNumber, chunk: data })
+
+      if (processing == false) {
+        uploadChunk()
+      }
     },
     complete: () => {
+      if (processing == false) {
+        uploadChunk()
+      }
       console.log("CSV upload complete.")
     }
   })
