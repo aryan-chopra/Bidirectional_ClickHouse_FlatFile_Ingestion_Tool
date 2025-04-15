@@ -3,6 +3,7 @@ import FileInput from "./components/FileInput.jsx"
 import DropdownList from "./components/DropdownList.jsx"
 import Papa from "papaparse"
 import Input from "./components/Input.jsx"
+import Button from "./components/Button.jsx"
 
 const initialInputs = {
   host: "",
@@ -101,7 +102,15 @@ function App() {
         onChange={handleInputChange}
       ></Input>
 
-      
+      <Button
+        text={"Connect"}
+        onClick={() => connect(inputs)}
+      ></Button>
+
+      <Button
+        text={"Upload"}
+        onClick={() => upload(file)}
+      ></Button>
     </div>
   )
 }
@@ -135,6 +144,58 @@ function initializeColumns(columns, setColumns, setSelectedColumns) {
   }
 
   setSelectedColumns(tempColumnObjects)
+}
+
+async function connect(inputs) {
+  console.log(inputs)
+
+  const data = {
+    Host: inputs.host,
+    Port: parseInt(inputs.port),
+    Database: inputs.database,
+    Username: inputs.username,
+    Password: inputs.password
+  }
+
+  console.log(data)
+
+  const res = await fetch('http://localhost:8080/connect', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+
+  const resJson = await res.json()
+
+  console.log(resJson)
+}
+
+async function upload(file) {
+  let chunkNumber = 0
+
+  Papa.parse(file, {
+    header: false,
+    skipEmptyLines: true,
+    worker: true,
+    chunkSize: 300, // Papa handles chunking!
+    chunk: async (results, parser) => {
+      let data
+
+      if (chunkNumber == 0) {
+        data = results.data.slice(1)
+      } else {
+        data = results.data
+      }
+      chunkNumber++
+      console.log("Chunk:")
+      console.log(data)
+    },
+    complete: () => {
+      console.log("CSV upload complete.")
+    }
+  })
 }
 
 export default App
