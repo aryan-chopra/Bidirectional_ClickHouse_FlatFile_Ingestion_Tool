@@ -1,8 +1,22 @@
 import { useState } from "react"
 
+/**
+ * DropdownMenu component renders a button that opens a dropdown menu with clickable options.
+ * When an option is selected, the `onClick` callback is triggered, and the dropdown is closed.
+ * The dropdown items are passed as an array, and the title for the button is also customizable.
+ * 
+ * @param {Object} props - The properties passed to the DropdownMenu component.
+ * @param {Array} props.items - An array of strings representing the menu items to display in the dropdown.
+ * @param {function} props.onClick - A callback function that is triggered when a dropdown option is clicked.
+ * @param {string} props.title - The text to display on the button that opens the dropdown.
+ * 
+ * @returns {JSX.Element} The rendered dropdown menu component.
+ */
 function DropdownMenu({ items = [], onClick, title }) {
+    // State to track if the dropdown is open or closed
     const [open, setOpen] = useState(false)
 
+    // Create the list of dropdown options by mapping over the `items` array
     const list = items.map((element, index) => {
         return (
             <button
@@ -16,10 +30,12 @@ function DropdownMenu({ items = [], onClick, title }) {
         )
     })
 
+    // Toggle the open/close state of the dropdown
     const toggleDropdown = () => {
         setOpen(prev => !prev)
     }
 
+    // Handle option click: close the dropdown and trigger the onClick callback
     const handleOptionClick = (e) => {
         setOpen(false)
         onClick(e)

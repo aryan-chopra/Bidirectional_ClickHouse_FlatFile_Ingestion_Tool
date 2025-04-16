@@ -1,8 +1,23 @@
 import { useState } from "react"
 
+/**
+ * DropdownCheckList component renders a dropdown menu with checkboxes, allowing 
+ * users to toggle the selection of items. The list of items is passed as a prop,
+ * and any changes are communicated back to the parent component via the `onChange` callback.
+ * 
+ * @param {Object} props - The properties passed to the DropdownCheckList component.
+ * @param {Object} props.items - An object containing key-value pairs where the key represents 
+ *                                 the label of the item, and the value is a boolean representing 
+ *                                 whether the item is checked or not.
+ * @param {function} props.onChange - A callback function to be triggered when an item is toggled.
+ * 
+ * @returns {JSX.Element} The rendered dropdown check list.
+ */
 function DropdownCheckList({ items = {}, onChange }) {
     console.log("Items:")
     console.log(items)
+
+    // Handles the toggling of an item in the list
     const handleToggle = (key, currentValue) => {
         const fakeEvent = {
             target: {
@@ -13,6 +28,7 @@ function DropdownCheckList({ items = {}, onChange }) {
         onChange(fakeEvent)
     }
 
+    // Map through the items and create the list of checkboxes
     const list = Object.entries(items).map(([key, value]) => (
         <div
             key={key}
@@ -37,6 +53,8 @@ function DropdownCheckList({ items = {}, onChange }) {
 
     console.log("List")
     console.log(list)
+
+    // State to track the open/closed state of the dropdown
     const [isOpen, setIsOpen] = useState(false);
 
     return (

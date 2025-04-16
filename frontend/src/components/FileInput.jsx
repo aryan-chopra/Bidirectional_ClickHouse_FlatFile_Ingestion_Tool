@@ -1,4 +1,14 @@
-function FileInput({file, onChange}) {
+/**
+ * FileInput component renders a file input field that allows users to select a file. 
+ * It accepts a file input and triggers the `onChange` callback when a file is selected.
+ * 
+ * @param {Object} props - The properties passed to the FileInput component.
+ * @param {function} props.onChange - A callback function that is triggered when a file is selected.
+ * @param {File} [props.file] - The file currently selected in the input (optional).
+ * 
+ * @returns {JSX.Element} The rendered file input element.
+ */
+function FileInput({ file, onChange }) {
     return (
         <>
             <label

@@ -17,18 +17,40 @@ const initialInputs = {
 }
 
 function App() {
+  // Store the column names of the uploaded CSV
   const [columns, setColumns] = useState([])
+
+  // The selected file object
   const [file, setFile] = useState(null)
+
+  // Track selected columns for upload
   const [selectedColumns, setSelectedColumns] = useState({})
+
+  // Store database connection credentials
   const [inputs, setInputs] = useState(initialInputs)
+
+  // Track the selected data source (File or ClickHouseDB)
   const [source, setSource] = useState("File")
+
+  // Store the list of tables from the database
   const [tables, setTables] = useState([])
+
+  // The currently selected table for fetching data
   const [selectedTable, setSelectedTable] = useState("Select Table")
+
+  // Flag to manage file upload actions
   const [fileActions, setFileActions] = useState(false)
+
+  // Flag to manage database actions
   const [dbActions, setDbActions] = useState(false)
+
+  // Status message for user feedback
   const [status, setStatus] = useState("Status: None")
+
+  // Type of status message (e.g., success, progress, error)
   const [statusType, setStatusType] = useState("")
 
+  // Effect to handle file upload
   useEffect(() => {
     getColumns(file, initializeColumns, setColumns, setSelectedColumns)
     if (file) {
@@ -37,11 +59,13 @@ function App() {
     }
   }, [file])
 
+  // Effect to track selected columns
   useEffect(() => {
     console.log("Selected columns")
     console.log(selectedColumns)
   }, [selectedColumns])
 
+  // Effect to handle source changes between File and ClickHouseDB
   useEffect(() => {
     if (source === "ClickHouseDB") {
       setDbActions(true)
@@ -52,12 +76,15 @@ function App() {
     }
   }, [source])
 
+  // Function to handle file change and parsing
   const handleFileChange = (event) => {
     const file = event.target.files[0]
     setFile(file)
   }
 
+  // Function to handle column selection
   const handleColumnSelection = (event) => {
+    // Get column name and selection status
     const id = event.target.id
     const checked = event.target.checked
 
@@ -68,6 +95,7 @@ function App() {
     })
   }
 
+  // Function to handle input changes (e.g., database credentials)
   const handleInputChange = (event) => {
     const id = event.target.id
     const value = event.target.value
@@ -197,6 +225,7 @@ function VariableDropdown({ source, selectedColumns, handleColumnSelection, tabl
   }
 }
 
+// Function to parse CSV columns and initialize selection
 function getColumns(file, onComplete, setColumns, setSelectedColumns) {
   if (!file) {
     return
@@ -216,6 +245,7 @@ function getColumns(file, onComplete, setColumns, setSelectedColumns) {
   )
 }
 
+// Function to initialize column selection state
 function initializeColumns(columns, setColumns, setSelectedColumns) {
   setColumns(columns)
 
@@ -228,6 +258,7 @@ function initializeColumns(columns, setColumns, setSelectedColumns) {
   setSelectedColumns(tempColumnObjects)
 }
 
+// Function to fetch tables from the ClickHouse database
 async function fetchTables(inputs, setTables, setStatus, setStatusType) {
   setStatus("Fetching tables")
   setStatusType("progress")
@@ -265,6 +296,7 @@ async function fetchTables(inputs, setTables, setStatus, setStatusType) {
   console.log(resJson)
 }
 
+// Function to connect to the ClickHouse database
 async function connect(inputs, setStatus, setStatusType) {
   console.log(inputs)
 
@@ -302,7 +334,7 @@ async function connect(inputs, setStatus, setStatusType) {
   console.log(resJson)
 }
 
-
+// Function to upload data to ClickHouse in chunks
 async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setStatusType) {
   const queue = []
   let processing = false
@@ -311,12 +343,14 @@ async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setS
   setStatus("Uploading...")
   setStatusType("progress")
 
+  // Get a list of selected columns
   const selectedColumns = Object.entries(selectedColumnsObj)
     .filter(([_, checked]) => checked)
     .map(([key]) => key)
 
+  // Dequeue the chunk from queue and upload it
   const uploadChunk = async function () {
-    console.log("Trying")
+    // If the queue is empty, stop processing the chunks
     if (queue.length == 0) {
       setStatus("Upload successful, uploaded " + uploadCount + " records")
       setStatusType("complete")
@@ -326,6 +360,8 @@ async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setS
     }
 
     processing = true
+
+    // Get the next chunk
     const chunkInfo = queue.shift()
 
     const chunkNumber = chunkInfo.chunkNumber
@@ -333,6 +369,8 @@ async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setS
 
     console.log(chunkInfo)
     console.log("Processing chunk number: " + chunkNumber)
+
+    // Prepare the data to be sent
     const data = {
       ConnectionInfo: {
         Host: inputs.host,
@@ -372,6 +410,7 @@ async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setS
 
   let chunkNumber = 0
 
+  // Loop through the CSV data and split it into chunks
   Papa.parse(file, {
     header: false,
     // dynamicTyping: true,
@@ -381,6 +420,7 @@ async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setS
     chunk: async (results, parser) => {
       let data
 
+      // Remove the header from the rows
       if (chunkNumber == 0) {
         data = results.data.slice(1)
       } else {
@@ -390,19 +430,20 @@ async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setS
       console.log("Chunk:")
       console.log(data)
 
+      // Filter columns out of data, that are not selected
       const selectedIndices = selectedColumns.map(col => {
         const index = columns.indexOf(col)
         if (index !== -1) {
           return index
         }
       })
-
       const filteredData = data.map(row => {
         return selectedIndices.map(idx => row[idx])
       })
 
       console.log(filteredData)
 
+      // Add the chunk to the queue to upload
       queue.push({ chunkNumber: chunkNumber, chunk: filteredData })
 
       if (processing == false) {
@@ -418,6 +459,7 @@ async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setS
   })
 }
 
+// Function to fetch rows from the ClickHouse database
 const fetchRows = async (inputs, selectedTable, setStatus, setStatusType) => {
   let start = 0
   let header = []
@@ -428,16 +470,19 @@ const fetchRows = async (inputs, selectedTable, setStatus, setStatusType) => {
   setStatus("Fetching rows...")
   setStatusType("progress")
 
+  // Till the response has rows, keep fetching further batches from backend
   while (hasMoreRows) {
     try {
       const data = await bringRows(inputs, selectedTable, start, setStatus, setStatusType);
 
       console.log(data)
 
+      // If the batch is first, extract and save the headers
       if (start === 0) {
         header = data.columnNames;
       }
 
+      // If the data contains rows, add them to all the rows, else, stop fetching batches
       if (!data.rows) {
         hasMoreRows = false;
         setStatus("Preparing download...")
@@ -460,6 +505,7 @@ const fetchRows = async (inputs, selectedTable, setStatus, setStatusType) => {
   downloadCsv(csvData, header, setStatus, setStatusType)
 }
 
+// Download CSV to the machine
 function downloadCsv(csvData, columnHeaders, setStatus, setStatusType) {
   // Stream CSV export in chunks to avoid memory overload
   const csvStream = Papa.unparse({
@@ -478,6 +524,7 @@ function downloadCsv(csvData, columnHeaders, setStatus, setStatusType) {
   setStatusType("complete")
 };
 
+// Function to fetch a batch from the backend 
 async function bringRows(inputs, selectedTable, start, setStatus, setStatusType) {
   const data = {
     ConnectionInfo: {
