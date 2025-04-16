@@ -1,14 +1,22 @@
 package utils
 
-import (
-	// "fmt"
-	// "time"
-)
+// "fmt"
+// "time"
 
+// InferTypes is a utility function that takes a row of data and infers the types of the values.
+// It returns a slice of strings representing the inferred types of each column in the row.
+// The types are represented as strings (e.g., "Bool", "Float64", "String").
+//
+// Parameters:
+// - row: A slice of any type representing a single row of data.
+//
+// Returns:
+// - []string: A slice of strings representing the inferred types of each column.
 func InferTypes(row []any) []string {
 
 	types := make([]string, len(row))
 
+	// Loop through each column in the row to infer its type
 	for columnIndex, _ := range row {
 		// switch v := value.(type) {
 		// case bool:
@@ -28,7 +36,7 @@ func InferTypes(row []any) []string {
 		// default:
 		// 	types[columnIndex] = "String"
 		// }
-		
+
 		types[columnIndex] = "String"
 	}
 
