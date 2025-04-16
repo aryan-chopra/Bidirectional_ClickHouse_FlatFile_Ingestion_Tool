@@ -8,11 +8,11 @@ import DropdownMenu from "./components/DropdownMenu.jsx"
 import Status from "./components/Status.jsx"
 
 const initialInputs = {
-  host: "jqii6ig8f6.asia-southeast1.gcp.clickhouse.cloud",
-  port: "9440",
-  database: "default",
-  username: "default",
-  password: "8ee_Rt6D~CWK7",
+  host: "",
+  port: "",
+  database: "",
+  username: "",
+  password: "",
   tableName: ""
 }
 
