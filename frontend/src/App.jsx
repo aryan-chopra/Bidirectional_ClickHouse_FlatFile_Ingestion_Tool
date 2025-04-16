@@ -23,8 +23,8 @@ function App() {
   const [source, setSource] = useState("File")
   const [tables, setTables] = useState([])
   const [selectedTable, setSelectedTable] = useState("Select Table")
-  const [csvData, setCsvData] = useState([])
-  const [columnHeaders, setColumnHeaders] = useState([])
+  const [fileActions, setFileActions] = useState(false)
+  const [dbActions, setDbActions] = useState(false)
 
   useEffect(() => {
     getColumns(file, initializeColumns, setColumns, setSelectedColumns)
@@ -35,6 +35,15 @@ function App() {
     console.log(selectedColumns)
   }, [selectedColumns])
 
+  useEffect(() => {
+    if (source === "ClickHouseDB") {
+      setDbActions(true)
+      setFileActions(false)
+    } else {
+      setDbActions(false)
+      setFileActions(true)
+    }
+  }, [source])
 
   const handleFileChange = (event) => {
     const file = event.target.files[0]
@@ -76,7 +85,7 @@ function App() {
 
       <VariableDropdown
         source={source}
-        columns={columns}
+        selectedColumns={selectedColumns}
         handleColumnSelection={handleColumnSelection}
         tables={tables}
         selectedTable={selectedTable}
@@ -106,6 +115,7 @@ function App() {
       ></Input>
 
       <Input
+        disabled={dbActions}
         placeholder={"Table Name"}
         value={inputs.tableName}
         id={"tableName"}
@@ -127,21 +137,25 @@ function App() {
       ></Input>
 
       <Button
+        disabled={dbActions}
         text={"Connect"}
         onClick={() => connect(inputs)}
       ></Button>
 
       <Button
+        disabled={dbActions}
         text={"Upload"}
         onClick={() => upload(columns, selectedColumns, inputs, file)}
       ></Button>
 
       <Button
+        disabled={fileActions}
         text={"Fetch Tables"}
         onClick={() => fetchTables(inputs, setTables)}
       />
 
       <Button
+        disabled={fileActions}
         text={"Download"}
         onClick={() => fetchRows(inputs, selectedTable)}
       ></Button>
@@ -149,18 +163,20 @@ function App() {
   )
 }
 
-function VariableDropdown({ source, columns, handleColumnSelection, tables, selectedTable, setSelectedTable }) {
+function VariableDropdown({ source, selectedColumns, handleColumnSelection, tables, selectedTable, setSelectedTable }) {
   if (source === 'File') {
+    console.log("Selected columns in variable:")
+    console.log(selectedColumns)
     return (
       <DropdownCheckList
-        items={columns}
+        items={selectedColumns}
         onChange={handleColumnSelection}
       />
     )
   } else {
     return (
       <DropdownMenu
-        title={selectedTable}
+        title={"Table: " + selectedTable}
         items={tables}
         onClick={(e) => setSelectedTable(e.target.id)}
       />
@@ -369,10 +385,10 @@ const fetchRows = async (inputs, selectedTable) => {
     }
 
     if (!data.rows) {
-      hasMoreRows = false; 
+      hasMoreRows = false;
     } else {
       csvData.push(...data.rows)
-      start = start + data.items 
+      start = start + data.items
     }
   }
 

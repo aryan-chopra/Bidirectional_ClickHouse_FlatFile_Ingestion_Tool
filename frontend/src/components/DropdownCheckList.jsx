@@ -1,27 +1,39 @@
 import { useState } from "react"
 
-function DropdownCheckList({ items = [], onChange }) {
+function DropdownCheckList({ items = {}, onChange }) {
     console.log("Items:")
     console.log(items)
+    const handleToggle = (key, currentValue) => {
+        const fakeEvent = {
+            target: {
+                id: key,
+                checked: !currentValue,
+            },
+        }
+        onChange(fakeEvent)
+    }
 
-    const list = items.map((item, index) => {
-        return (
-
-            <label
-                key={item}
-                className="flex items-center px-3 py-0 rounded-md hover:bg-blue-50 cursor-pointer transition duration-150 ease-in-out"
-            >
-                <input
-                    id={item}
-                    type="checkbox"
-                    defaultChecked={true}
-                    onChange={(e) => onChange(e)}
-                    className="cursor-pointer align-middle form-checkbox text-blue-600 h-4 w-4 mr-4"
-                />
-                <label htmlFor={item} className="cursor-pointer align-middle p-4 text-sm text-gray-800">{item}</label>
-            </label>
-        )
-    })
+    const list = Object.entries(items).map(([key, value]) => (
+        <div
+            key={key}
+            onClick={() => handleToggle(key, value)}
+            className="flex items-center gap-x-2 px-3 py-1 rounded-md hover:bg-blue-50 cursor-pointer transition duration-150 ease-in-out"
+        >
+            <input
+                id={key}
+                type="checkbox"
+                checked={value}
+                onChange={(e) => {
+                    e.stopPropagation() // prevent double-toggle
+                    onChange(e)
+                }}
+                className="cursor-pointer text-blue-600 h-4 w-4"
+            />
+            <span className="text-sm text-gray-800 cursor-pointer break-words">
+                {key}
+            </span>
+        </div>
+    ))
 
     console.log("List")
     console.log(list)
