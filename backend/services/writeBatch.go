@@ -29,7 +29,7 @@ func getTableString(batch models.Batch, types []string) string {
 		columns = append(columns, column)
 	}
 
-	return fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s) ENGINE = Memory",
+	return fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s) ENGINE = MergeTree ORDER BY tuple()",
 		batch.TableName, strings.Join(columns, ", "))
 }
 
