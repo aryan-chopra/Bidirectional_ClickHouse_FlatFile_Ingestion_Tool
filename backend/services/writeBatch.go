@@ -43,7 +43,7 @@ func getTableString(batch models.Batch, types []string) string {
 // - int: The number of rows successfully inserted.
 // - error: An error if the insertion fails, or nil if successful.
 func sendBatch(conn clickhouse.Conn, batch models.Batch) (int, error) {
-	fmt.Println("uploading....")
+	fmt.Println("uploading...")
 
 	ctx := context.Background()
 
