@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"zeotap/models"
@@ -14,7 +13,6 @@ func SetData (c *gin.Context) {
 	var batch models.Batch
 	
 	if err := c.BindJSON(&batch); err != nil {
-		fmt.Println(err)
 		c.Error(err)
 		return
 	}
@@ -23,7 +21,6 @@ func SetData (c *gin.Context) {
 	
 	if err != nil {
 		c.Error(err)
-		fmt.Println(err)
 		return
 	}
 	

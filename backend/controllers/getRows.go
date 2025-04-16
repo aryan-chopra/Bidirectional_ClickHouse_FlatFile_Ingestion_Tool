@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"zeotap/models"
 	"zeotap/services"
@@ -15,7 +14,6 @@ func GetRows (c *gin.Context) {
 	err := c.BindJSON(&rowInfo)
 	
 	if err != nil {
-		fmt.Println(err)
 		c.Error(err)
 		return
 	}
@@ -23,7 +21,6 @@ func GetRows (c *gin.Context) {
 	columnNames, fetchedRows, items, err := services.FetchRows(rowInfo)
 	
 	if err != nil {
-		fmt.Println(err)
 		c.Error(err)
 		return
 	}

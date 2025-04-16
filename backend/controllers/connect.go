@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"zeotap/models"
 	"zeotap/services"
@@ -15,14 +14,12 @@ func Connect(c *gin.Context) {
 	err := c.BindJSON(&connectionInfo)
 	
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 	
 	_, err = services.Connect(connectionInfo)
 	
 	if err != nil {
-		fmt.Println(err)
 		c.Error(err)
 		return
 	}

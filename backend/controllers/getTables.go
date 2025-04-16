@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +13,6 @@ func GetTables(c *gin.Context) {
 	var tableInfo models.TableInfo
 	
 	if err := c.BindJSON(&tableInfo); err != nil {
-		fmt.Println(err)
 		c.Error(err)
 		return
 	}
@@ -22,7 +20,6 @@ func GetTables(c *gin.Context) {
 	tables, err := services.FetchTables(tableInfo)
 	
 	if (err != nil) {
-		fmt.Println(err)
 		c.Error(err)
 		return
 	}
