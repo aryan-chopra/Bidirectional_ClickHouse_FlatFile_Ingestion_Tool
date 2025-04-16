@@ -5,6 +5,7 @@ import Input from "./components/Input.jsx"
 import Button from "./components/Button.jsx"
 import DropdownCheckList from "./components/DropdownCheckList.jsx"
 import DropdownMenu from "./components/DropdownMenu.jsx"
+import Status from "./components/Status.jsx"
 
 const initialInputs = {
   host: "jqii6ig8f6.asia-southeast1.gcp.clickhouse.cloud",
@@ -25,9 +26,15 @@ function App() {
   const [selectedTable, setSelectedTable] = useState("Select Table")
   const [fileActions, setFileActions] = useState(false)
   const [dbActions, setDbActions] = useState(false)
+  const [status, setStatus] = useState("Status: None")
+  const [statusType, setStatusType] = useState("")
 
   useEffect(() => {
     getColumns(file, initializeColumns, setColumns, setSelectedColumns)
+    if (file) {
+      setStatus("Uploaded File")
+      setStatusType("complete")
+    }
   }, [file])
 
   useEffect(() => {
@@ -136,29 +143,35 @@ function App() {
         onChange={handleInputChange}
       ></Input>
 
-      <Button
-        disabled={dbActions}
-        text={"Connect"}
-        onClick={() => connect(inputs)}
-      ></Button>
+      <div>
+        <Button
+          // disabled={dbActions}
+          text={"Connect"}
+          onClick={() => connect(inputs, setStatus, setStatusType)}
+        ></Button>
 
-      <Button
-        disabled={dbActions}
-        text={"Upload"}
-        onClick={() => upload(columns, selectedColumns, inputs, file)}
-      ></Button>
+        <Button
+          disabled={dbActions}
+          text={"Upload"}
+          onClick={() => upload(columns, selectedColumns, inputs, file, setStatus, setStatusType)}
+        ></Button>
 
-      <Button
-        disabled={fileActions}
-        text={"Fetch Tables"}
-        onClick={() => fetchTables(inputs, setTables)}
+        <Button
+          disabled={fileActions}
+          text={"Fetch Tables"}
+          onClick={() => fetchTables(inputs, setTables, setStatus, setStatusType)}
+        />
+
+        <Button
+          disabled={fileActions}
+          text={"Download"}
+          onClick={() => fetchRows(inputs, selectedTable, setStatus, setStatusType)}
+        ></Button>
+      </div>
+      <Status
+        content={status}
+        type={statusType}
       />
-
-      <Button
-        disabled={fileActions}
-        text={"Download"}
-        onClick={() => fetchRows(inputs, selectedTable)}
-      ></Button>
     </div>
   )
 }
@@ -215,7 +228,10 @@ function initializeColumns(columns, setColumns, setSelectedColumns) {
   setSelectedColumns(tempColumnObjects)
 }
 
-async function fetchTables(inputs, setTables) {
+async function fetchTables(inputs, setTables, setStatus, setStatusType) {
+  setStatus("Fetching tables")
+  setStatusType("progress")
+
   const data = {
     ConnectionInfo: {
       Host: inputs.host,
@@ -236,13 +252,24 @@ async function fetchTables(inputs, setTables) {
 
   const resJson = await res.json()
 
+  if (res.ok) {
+    setStatus("Fetched tables successfuly")
+    setStatusType("complete")
+  } else {
+    setStatus(res.message)
+    setStatusType("error")
+  }
+
   setTables(resJson.tables)
 
   console.log(resJson)
 }
 
-async function connect(inputs) {
+async function connect(inputs, setStatus, setStatusType) {
   console.log(inputs)
+
+  setStatus("Connecting...")
+  setStatusType("progress")
 
   const data = {
     Host: inputs.host,
@@ -264,13 +291,25 @@ async function connect(inputs) {
 
   const resJson = await res.json()
 
+  if (res.ok) {
+    setStatus("Connected successfuly")
+    setStatusType("complete")
+  } else {
+    setStatus(resJson.message)
+    setStatusType("error")
+  }
+
   console.log(resJson)
 }
 
 
-async function upload(columns, selectedColumnsObj, inputs, file) {
+async function upload(columns, selectedColumnsObj, inputs, file, setStatus, setStatusType) {
   const queue = []
   let processing = false
+  let uploadCount = 0
+
+  setStatus("Uploading...")
+  setStatusType("progress")
 
   const selectedColumns = Object.entries(selectedColumnsObj)
     .filter(([_, checked]) => checked)
@@ -279,6 +318,9 @@ async function upload(columns, selectedColumnsObj, inputs, file) {
   const uploadChunk = async function () {
     console.log("Trying")
     if (queue.length == 0) {
+      setStatus("Upload successful, uploaded " + uploadCount + " records")
+      setStatusType("complete")
+
       processing = false
       return
     }
@@ -315,6 +357,14 @@ async function upload(columns, selectedColumnsObj, inputs, file) {
     console.log("Got chunk number: " + chunkNumber)
 
     const resJson = await res.json()
+
+    if (res.ok) {
+      uploadCount += resJson.count
+      setStatus("Uploaded " + uploadCount + " records")
+    } else {
+      setStatus(resJson.message)
+      setStatusType("error")
+    }
 
     console.log(resJson)
     uploadChunk()
@@ -368,36 +418,49 @@ async function upload(columns, selectedColumnsObj, inputs, file) {
   })
 }
 
-const fetchRows = async (inputs, selectedTable) => {
+const fetchRows = async (inputs, selectedTable, setStatus, setStatusType) => {
   let start = 0
   let header = []
   const csvData = []
 
   let hasMoreRows = true
 
+  setStatus("Fetching rows...")
+  setStatusType("progress")
+
   while (hasMoreRows) {
-    const data = await bringRows(inputs, selectedTable, start);
+    try {
+      const data = await bringRows(inputs, selectedTable, start, setStatus, setStatusType);
 
-    console.log(data)
+      console.log(data)
 
-    if (start === 0) {
-      header = data.columnNames;
-    }
+      if (start === 0) {
+        header = data.columnNames;
+      }
 
-    if (!data.rows) {
-      hasMoreRows = false;
-    } else {
-      csvData.push(...data.rows)
-      start = start + data.items
+      if (!data.rows) {
+        hasMoreRows = false;
+        setStatus("Preparing download...")
+      } else {
+        csvData.push(...data.rows)
+        setStatus("Ingested " + csvData.length + " rows")
+        start = start + data.items
+      }
+    } catch (e) {
+      console.log(e)
+      // setStatus(e)
+      setStatusType("error")
+      return
     }
   }
 
+
   console.log(csvData)
 
-  downloadCsv(csvData, header)
-};
+  downloadCsv(csvData, header, setStatus, setStatusType)
+}
 
-function downloadCsv(csvData, columnHeaders) {
+function downloadCsv(csvData, columnHeaders, setStatus, setStatusType) {
   // Stream CSV export in chunks to avoid memory overload
   const csvStream = Papa.unparse({
     fields: columnHeaders,
@@ -410,9 +473,12 @@ function downloadCsv(csvData, columnHeaders) {
   link.href = URL.createObjectURL(blob);
   link.download = "data.csv";
   link.click();
+
+  setStatus("Download complete, ingested " + csvData.length + " records")
+  setStatusType("complete")
 };
 
-async function bringRows(inputs, selectedTable, start) {
+async function bringRows(inputs, selectedTable, start, setStatus, setStatusType) {
   const data = {
     ConnectionInfo: {
       Host: inputs.host,
@@ -434,6 +500,13 @@ async function bringRows(inputs, selectedTable, start) {
   });
 
   const resJson = await res.json();
+
+  if (!res.ok) {
+    setStatus(resJson.message)
+    setStatusType("Error")
+    throw new Error(resJson.message)
+  }
+
   return resJson
 }
 
