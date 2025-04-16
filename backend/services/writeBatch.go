@@ -47,7 +47,7 @@ func sendBatch(conn clickhouse.Conn, batch models.Batch) (int, error) {
 		rowsProcessed++
 	}
 
-	fmt.Println("Processes rows")
+	fmt.Println("Processed rows")
 
 	batchToPush.Send()
 

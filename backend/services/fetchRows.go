@@ -16,7 +16,7 @@ func FetchRows(rowInfo models.RowInfo) ([]string, [][]any, int, error) {
 
 	var fetchedRows [][]any
 
-	limit := 4
+	limit := 15000
 
 	query := fmt.Sprintf("SELECT * FROM %s LIMIT %d OFFSET %d", rowInfo.TableName, limit, rowInfo.Start)
 

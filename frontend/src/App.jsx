@@ -23,6 +23,8 @@ function App() {
   const [source, setSource] = useState("File")
   const [tables, setTables] = useState([])
   const [selectedTable, setSelectedTable] = useState("Select Table")
+  const [csvData, setCsvData] = useState([])
+  const [columnHeaders, setColumnHeaders] = useState([])
 
   useEffect(() => {
     getColumns(file, initializeColumns, setColumns, setSelectedColumns)
@@ -138,6 +140,11 @@ function App() {
         text={"Fetch Tables"}
         onClick={() => fetchTables(inputs, setTables)}
       />
+
+      <Button
+        text={"Download"}
+        onClick={() => fetchRows(inputs, selectedTable)}
+      ></Button>
     </div>
   )
 }
@@ -301,7 +308,7 @@ async function upload(columns, selectedColumnsObj, inputs, file) {
 
   Papa.parse(file, {
     header: false,
-    dynamicTyping: true,
+    // dynamicTyping: true,
     skipEmptyLines: true,
     worker: true,
     chunkSize: 5000000,
@@ -343,6 +350,75 @@ async function upload(columns, selectedColumnsObj, inputs, file) {
       console.log("CSV upload complete.")
     }
   })
+}
+
+const fetchRows = async (inputs, selectedTable) => {
+  let start = 0
+  let header = []
+  const csvData = []
+
+  let hasMoreRows = true
+
+  while (hasMoreRows) {
+    const data = await bringRows(inputs, selectedTable, start);
+
+    console.log(data)
+
+    if (start === 0) {
+      header = data.columnNames;
+    }
+
+    if (!data.rows) {
+      hasMoreRows = false; 
+    } else {
+      csvData.push(...data.rows)
+      start = start + data.items 
+    }
+  }
+
+  console.log(csvData)
+
+  downloadCsv(csvData, header)
+};
+
+function downloadCsv(csvData, columnHeaders) {
+  // Stream CSV export in chunks to avoid memory overload
+  const csvStream = Papa.unparse({
+    fields: columnHeaders,
+    data: csvData,
+  });
+
+  // Create a Blob with the CSV content
+  const blob = new Blob([csvStream], { type: "text/csv;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "data.csv";
+  link.click();
+};
+
+async function bringRows(inputs, selectedTable, start) {
+  const data = {
+    ConnectionInfo: {
+      Host: inputs.host,
+      Port: parseInt(inputs.port),
+      Database: inputs.database,
+      Username: inputs.username,
+      Password: inputs.password,
+    },
+    TableName: selectedTable,
+    Start: start,  // Offset for pagination
+  };
+
+  const res = await fetch("http://localhost:8080/get-rows", {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const resJson = await res.json();
+  return resJson
 }
 
 export default App
