@@ -1,0 +1,4 @@
+- Asked AI to document my code.
+- Asked AI for a high level understanding of batches and streaming.
+- Asked AI for a high level understanding of how streaming of chunks of a FlatFile works
+- Asked AI for a high level understanding of how bringing data in batches after an offset works.
