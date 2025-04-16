@@ -10,7 +10,9 @@
  */
 function FileInput({ file, onChange }) {
     return (
-        <>
+        <div
+        className="mb-3"
+        >
             <label
                 htmlFor="file_input"
                 className="cursor-pointer sr-only">Choose file</label>
@@ -23,7 +25,7 @@ function FileInput({ file, onChange }) {
                 file:me-4
                 file:py-3 file:px-4
                 dark:file:bg-neutral-700 dark:file:text-neutral-400"></input>
-        </>
+        </div>
     )
 }
 

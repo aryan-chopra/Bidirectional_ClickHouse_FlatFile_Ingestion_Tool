@@ -106,100 +106,108 @@ function App() {
   }
 
   return (
-    <div>
-      <FileInput
-        file={file}
-        onChange={handleFileChange}
-      />
-
-      <DropdownMenu
-        title={"Source: " + source}
-        items={["File", "ClickHouseDB"]}
-        onClick={(e) => setSource(e.target.id)}
-      />
-
-      <VariableDropdown
-        source={source}
-        selectedColumns={selectedColumns}
-        handleColumnSelection={handleColumnSelection}
-        tables={tables}
-        selectedTable={selectedTable}
-        setSelectedTable={setSelectedTable}
-      />
-
-      <Input
-        placeholder={"Hostname"}
-        value={inputs.host}
-        id={"host"}
-        onChange={handleInputChange}
+    <div
+      className="flex items-center justify-center h-screen w-screen"
+    >
+      <div
+        className="gap-2 flex-row items-center justify-center h-1/2 w-1/2"
       >
-      </Input>
-
-      <Input
-        placeholder={"Port"}
-        value={inputs.port}
-        id={"port"}
-        onChange={handleInputChange}
-      ></Input>
-
-      <Input
-        placeholder={"Database"}
-        value={inputs.database}
-        id={"database"}
-        onChange={handleInputChange}
-      ></Input>
-
-      <Input
-        disabled={dbActions}
-        placeholder={"Table Name"}
-        value={inputs.tableName}
-        id={"tableName"}
-        onChange={handleInputChange}
-      ></Input>
-
-      <Input
-        placeholder={"Username"}
-        value={inputs.username}
-        id={"username"}
-        onChange={handleInputChange}
-      ></Input>
-
-      <Input
-        placeholder={"Password"}
-        value={inputs.password}
-        id={"password"}
-        onChange={handleInputChange}
-      ></Input>
-
-      <div>
-        <Button
-          // disabled={dbActions}
-          text={"Connect"}
-          onClick={() => connect(inputs, setStatus, setStatusType)}
-        ></Button>
-
-        <Button
-          disabled={dbActions}
-          text={"Upload"}
-          onClick={() => upload(columns, selectedColumns, inputs, file, setStatus, setStatusType)}
-        ></Button>
-
-        <Button
-          disabled={fileActions}
-          text={"Fetch Tables"}
-          onClick={() => fetchTables(inputs, setTables, setStatus, setStatusType)}
+        <FileInput
+          file={file}
+          onChange={handleFileChange}
         />
 
-        <Button
-          disabled={fileActions}
-          text={"Download"}
-          onClick={() => fetchRows(inputs, selectedTable, setStatus, setStatusType)}
-        ></Button>
+        <DropdownMenu
+          title={"Source: " + source}
+          items={["File", "ClickHouseDB"]}
+          onClick={(e) => setSource(e.target.id)}
+        />
+
+        <VariableDropdown
+          source={source}
+          selectedColumns={selectedColumns}
+          handleColumnSelection={handleColumnSelection}
+          tables={tables}
+          selectedTable={selectedTable}
+          setSelectedTable={setSelectedTable}
+        />
+
+        <Input
+          placeholder={"Hostname"}
+          value={inputs.host}
+          id={"host"}
+          onChange={handleInputChange}
+        >
+        </Input>
+
+        <Input
+          placeholder={"Port"}
+          value={inputs.port}
+          id={"port"}
+          onChange={handleInputChange}
+        ></Input>
+
+        <Input
+          placeholder={"Database"}
+          value={inputs.database}
+          id={"database"}
+          onChange={handleInputChange}
+        ></Input>
+
+        <Input
+          disabled={dbActions}
+          placeholder={"Table Name"}
+          value={inputs.tableName}
+          id={"tableName"}
+          onChange={handleInputChange}
+        ></Input>
+
+        <Input
+          placeholder={"Username"}
+          value={inputs.username}
+          id={"username"}
+          onChange={handleInputChange}
+        ></Input>
+
+        <Input
+          placeholder={"Password"}
+          value={inputs.password}
+          id={"password"}
+          onChange={handleInputChange}
+        ></Input>
+
+        <div
+          className="flex justify-between"
+        >
+          <Button
+            // disabled={dbActions}
+            text={"Connect"}
+            onClick={() => connect(inputs, setStatus, setStatusType)}
+          ></Button>
+
+          <Button
+            disabled={dbActions}
+            text={"Upload"}
+            onClick={() => upload(columns, selectedColumns, inputs, file, setStatus, setStatusType)}
+          ></Button>
+
+          <Button
+            disabled={fileActions}
+            text={"Fetch Tables"}
+            onClick={() => fetchTables(inputs, setTables, setStatus, setStatusType)}
+          />
+
+          <Button
+            disabled={fileActions}
+            text={"Download"}
+            onClick={() => fetchRows(inputs, selectedTable, setStatus, setStatusType)}
+          ></Button>
+        </div>
+        <Status
+          content={status}
+          type={statusType}
+        />
       </div>
-      <Status
-        content={status}
-        type={statusType}
-      />
     </div>
   )
 }
