@@ -23,7 +23,7 @@ function Input({ id, placeholder, value, onChange, disabled = false }) {
     }
 
     return (
-        <div className="w-full min-w-[200px] my-3">
+        <div className="w-full min-w-[200px]">
             <input
                 disabled={disabled}
                 id={id}

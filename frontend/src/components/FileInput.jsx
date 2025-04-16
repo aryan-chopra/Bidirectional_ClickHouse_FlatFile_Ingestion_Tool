@@ -11,7 +11,7 @@
 function FileInput({ file, onChange }) {
     return (
         <div
-        className="mb-3"
+        className=""
         >
             <label
                 htmlFor="file_input"
