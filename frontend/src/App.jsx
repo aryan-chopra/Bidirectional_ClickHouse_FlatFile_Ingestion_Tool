@@ -78,6 +78,8 @@ function App() {
 
   // Function to handle file change and parsing
   const handleFileChange = (event) => {
+    setStatus("Processing file")
+    setStatusType("progress")
     const file = event.target.files[0]
     setFile(file)
   }
@@ -245,6 +247,7 @@ function getColumns(file, onComplete, setColumns, setSelectedColumns) {
     {
       preview: 1,
       header: true,
+      // worker: true,
       complete: (results) => {
         console.log(results.meta.fields)
         onComplete(results.meta.fields, setColumns, setSelectedColumns)
