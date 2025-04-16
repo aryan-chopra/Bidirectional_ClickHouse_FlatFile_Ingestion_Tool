@@ -25,6 +25,10 @@ func getTableString(batch models.Batch, types []string) string {
 
 	// Loop over each column in the batch and create a column definition string
 	for index, _ := range batch.ColumnNames {
+
+		if len(batch.ColumnNames[index]) == 0 {
+			batch.ColumnNames[index] = "empty"
+		}
 		column := fmt.Sprintf("`%s` %s", batch.ColumnNames[index], types[index])
 		columns = append(columns, column)
 	}
@@ -95,7 +99,7 @@ func sendBatch(conn clickhouse.Conn, batch models.Batch) (int, error) {
 // - error: An error if the batch insertion fails, or nil if successful.
 func splitAndInsertBatch(conn clickhouse.Conn, batch models.Batch) (int32, error) {
 	// Define the maximum size for each batch, and the number of batches
-	batchSize := 15000
+	batchSize := 2000
 	batchCount := (len(batch.Rows) + batchSize - 1) / batchSize
 
 	var processedRows int32
@@ -149,7 +153,7 @@ func splitAndInsertBatch(conn clickhouse.Conn, batch models.Batch) (int32, error
 func WriteBatch(batch models.Batch) (int32, error) {
 	fmt.Println("In service to write")
 	connectionInfo := batch.ConnectionInfo
-	
+
 	//Establish connection to DB
 	conn, err := Connect(connectionInfo)
 	fmt.Println("Executed connect")
