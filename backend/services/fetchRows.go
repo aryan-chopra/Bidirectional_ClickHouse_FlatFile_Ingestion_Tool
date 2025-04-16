@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"zeotap/errors"
 	"zeotap/models"
 )
 
@@ -25,7 +26,8 @@ func FetchRows(rowInfo models.RowInfo) ([]string, [][]any, int, error) {
 	rows, err := conn.Query(context.Background(), query)
 
 	if err != nil {
-		return nil, nil, 0, err
+		errorMessage := fmt.Sprintf("Failed to fetch rows: %s", err.Error())
+		return nil, nil, 0, errors.MakeInternalServerError(errorMessage)
 	}
 	
 	var (
@@ -40,7 +42,8 @@ func FetchRows(rowInfo models.RowInfo) ([]string, [][]any, int, error) {
 		err := rows.Scan(vars...)
 
 		if err != nil {
-			return nil, nil, 0, err
+			errorMessage := fmt.Sprintf("Failed to insert rows to struct: %s", err.Error())
+			return nil, nil, 0, errors.MakeInternalServerError(errorMessage)
 		}
 
 		scannedItems := make([]any, len(vars))

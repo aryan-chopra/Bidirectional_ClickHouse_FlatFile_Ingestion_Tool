@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"zeotap/errors"
 	"zeotap/models"
 	"zeotap/utils"
 
@@ -30,7 +31,8 @@ func sendBatch(conn clickhouse.Conn, batch models.Batch) (int, error) {
 	batchToPush, err := conn.PrepareBatch(ctx, insertQuery)
 
 	if err != nil {
-		return 0, err
+		errorMessage := fmt.Sprintf("Failed to prepare batch: %s", err.Error())
+		return 0, errors.MakeInternalServerError(errorMessage)
 	}
 
 	var rowsProcessed int
@@ -41,7 +43,8 @@ func sendBatch(conn clickhouse.Conn, batch models.Batch) (int, error) {
 		err := batchToPush.Append(row...)
 
 		if err != nil {
-			return 0, err
+			errorMessage := fmt.Sprintf("Failed to push row to batch: %s", err.Error())
+			return 0, errors.MakeInternalServerError(errorMessage)
 		}
 
 		rowsProcessed++
@@ -69,7 +72,8 @@ func splitAndInsertBatch(conn clickhouse.Conn, batch models.Batch) (int32, error
 	err := conn.Exec(ctx, tableString)
 
 	if err != nil {
-		return 0, err
+		errorMessage := fmt.Sprintf("Could not make new table: %s", err.Error())
+		return 0, errors.MakeInternalServerError(errorMessage)
 	}
 
 	for i := 0; i < batchCount; i++ {

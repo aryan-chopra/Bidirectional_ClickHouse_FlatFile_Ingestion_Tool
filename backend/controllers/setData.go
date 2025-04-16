@@ -15,13 +15,16 @@ func SetData (c *gin.Context) {
 	
 	if err := c.BindJSON(&batch); err != nil {
 		fmt.Println(err)
+		c.Error(err)
 		return
 	}
 	
 	count, err := services.WriteBatch(batch)
 	
 	if err != nil {
+		c.Error(err)
 		fmt.Println(err)
+		return
 	}
 	
 	c.JSON(http.StatusOK, gin.H{

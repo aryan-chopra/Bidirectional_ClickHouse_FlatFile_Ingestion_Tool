@@ -3,6 +3,7 @@ package services
 import (
 	"crypto/tls"
 	"fmt"
+	"zeotap/errors"
 	"zeotap/models"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -26,13 +27,13 @@ func Connect(connectionInfo models.ConnectionInfo) (clickhouse.Conn, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.MakeConnectionError(err.Error())
 	}
 
 	v, err := conn.ServerVersion()
 
 	if err != nil {
-		return nil, err
+		return nil, errors.MakeConnectionError(err.Error())
 	}
 
 	fmt.Println(v.String())

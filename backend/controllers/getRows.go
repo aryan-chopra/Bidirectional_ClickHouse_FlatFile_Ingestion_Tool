@@ -16,6 +16,7 @@ func GetRows (c *gin.Context) {
 	
 	if err != nil {
 		fmt.Println(err)
+		c.Error(err)
 		return
 	}
 	
@@ -23,6 +24,7 @@ func GetRows (c *gin.Context) {
 	
 	if err != nil {
 		fmt.Println(err)
+		c.Error(err)
 		return
 	}
 	

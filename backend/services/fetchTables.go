@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"fmt"
+	"zeotap/errors"
 	"zeotap/models"
 )
 
@@ -16,7 +18,8 @@ func FetchTables(tableInfo models.TableInfo) ([]string, error) {
 	row, err := conn.Query(context.Background(), "SHOW TABLES")
 	
 	if err != nil {
-		return nil, err
+		errorMessage := fmt.Sprintf("Could not fetch tables: %s", err.Error())
+		return nil, errors.MakeInternalServerError(errorMessage)
 	}
 	
 	for row.Next() {

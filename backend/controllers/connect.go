@@ -23,6 +23,7 @@ func Connect(c *gin.Context) {
 	
 	if err != nil {
 		fmt.Println(err)
+		c.Error(err)
 		return
 	}
 	

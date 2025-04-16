@@ -15,6 +15,7 @@ func GetTables(c *gin.Context) {
 	
 	if err := c.BindJSON(&tableInfo); err != nil {
 		fmt.Println(err)
+		c.Error(err)
 		return
 	}
 	
@@ -22,6 +23,7 @@ func GetTables(c *gin.Context) {
 	
 	if (err != nil) {
 		fmt.Println(err)
+		c.Error(err)
 		return
 	}
 	
